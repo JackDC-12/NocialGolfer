@@ -1,6 +1,7 @@
 import clingo
 import os,sys
 from os.path import join as joinp
+from copy import copy
 
 
 
@@ -100,7 +101,7 @@ def pad_students(students,n_groups):
     resdiv = len(students)//n_groups
     remainder = len(students)%n_groups
     print(resdiv-remainder)
-    students_padded = students
+    students_padded = copy(students)
     if remainder > 0:
         for i in range(resdiv-remainder):
             students_padded.append(len(students)+i)
@@ -128,23 +129,24 @@ def facts_met_students(past_groups_padded,n_groups):
                 result += "meets({},{},{}).\n".format(student1,student2,lunch_id)
     return result
 
-def parse_solution(solution, print_names=False):
+def parse_solution(solution, print_names=False, include_padding=False):
     solution = solution[20:-1] #trim start and end
     solution = solution.split(") student_lunch_group(")
     lunch_group_student = [[[] for _ in range(n_groups)] for _ in range(lunches)]
     for row in solution:
         s,l,g = [int(x) for x in row.split(',')] #parse the 3 numbers and put them in 3 variables
-        if print_names:
+        if s >= len(students) and not include_padding:
+            continue
+        
+        if print_names and s<len(students):
             s = students[s]
         lunch_group_student[l][g].append(s)
     print(lunch_group_student)
     return lunch_group_student
 
+
+
 create_input_file(filename="input.lp")
-
-
-
-
 ctl = clingo.Control()
 ctl.load('./input.lp')
 ctl.load('./solver.lp')
@@ -157,4 +159,4 @@ with ctl.solve(on_model=on_model, async_=True) as handle:
     # print (handle.get())
 print("Cost of Final solution is ",cost)
 
-parse_solution(solution, print_names=True)
+parse_solution(solution, print_names=True, include_padding=False)
