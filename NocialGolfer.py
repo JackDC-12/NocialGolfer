@@ -6,6 +6,7 @@ from os.path import join as joinp
 
 ###################################INPUT PARAMETERS###############################################################
 
+# update with the real names
 students = [
     "Giuseppe",  # 0
     "Maria",     # 1
@@ -58,15 +59,15 @@ past_groups = [
     [26, 27, 28, 29, 30, 31], # Group 6: 6 members
     [32, 33, 34, 35, 36, 37]  # Group 7: 6 members
 ]
-weeks = 5
-n_groups = 6
-time_limit = 10 #timeout for the solver (in seconds)
 
-cost = -1
-solution = ""
+lunches = 1 #how many lunches to plan ahead
+n_groups = 6 #n of groups for the lunch
+time_limit = 10 #timeout for the solver (in seconds)
 
 ###################################INPUT PARAMETERS END###############################################################
 
+cost = -1
+solution = ""
 
 
 class Context:
@@ -87,7 +88,7 @@ def create_input_file(filename="input.lp"):
     students_per_group = len(students_padded)//n_groups
     input =  "groups({}).\n".format(n_groups)
     input += "students({}).\n".format(len(students_padded))
-    input += "weeks({}).\n".format(weeks)
+    input += "lunches({}).\n".format(lunches)
     input += "students_per_group({}).\n".format(students_per_group)
     input += facts_met_students(past_groups_padded,n_groups)
     with open(filename,'w') as f:
@@ -117,16 +118,27 @@ def pad_groups(past_groups,students,students_padded):
 def facts_met_students(past_groups_padded,n_groups):
     result = ""
     curr_group = []
-    for week_id,group in enumerate(past_groups_padded):
+    for group_i,group in enumerate(past_groups_padded):
         group.sort()
         print(group)
         for i,student1 in enumerate(group):
             for j in range(i+1,len(group)):
                 student2 = group[j]
-                result += "meets({},{},{}).\n".format(student1,student2,week_id*-1)
+                lunch_id = (group_i*-1) -1 #groups from the past get negative indeces, to not mix them with the ones generated from the solver
+                result += "meets({},{},{}).\n".format(student1,student2,lunch_id)
     return result
 
-
+def parse_solution(solution, print_names=False):
+    solution = solution[20:-1] #trim start and end
+    solution = solution.split(") student_lunch_group(")
+    lunch_group_student = [[[] for _ in range(n_groups)] for _ in range(lunches)]
+    for row in solution:
+        s,l,g = [int(x) for x in row.split(',')] #parse the 3 numbers and put them in 3 variables
+        if print_names:
+            s = students[s]
+        lunch_group_student[l][g].append(s)
+    print(lunch_group_student)
+    return lunch_group_student
 
 create_input_file(filename="input.lp")
 
@@ -144,4 +156,5 @@ with ctl.solve(on_model=on_model, async_=True) as handle:
     print("++++++++++++++++++TIMEOUT+++++++++++++++++++++++")
     # print (handle.get())
 print("Cost of Final solution is ",cost)
-print(solution)
+
+parse_solution(solution, print_names=True)
