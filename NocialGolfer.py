@@ -2,6 +2,10 @@ import clingo
 import os,sys
 from os.path import join as joinp
 
+
+
+###################################INPUT PARAMETERS###############################################################
+
 students = [
     "Giuseppe",  # 0
     "Maria",     # 1
@@ -43,6 +47,8 @@ students = [
     "Daniela"    # 37
 ]
 
+### add a list of numbers corresponding to students that belong to the same group
+### this can be used also to indicate lunch groups that happened in the past
 past_groups = [
     [0, 1, 2, 3, 4],     # Group 1: 5 members
     [5, 6, 7, 8, 9],     # Group 2: 5 members
@@ -52,8 +58,16 @@ past_groups = [
     [26, 27, 28, 29, 30, 31], # Group 6: 6 members
     [32, 33, 34, 35, 36, 37]  # Group 7: 6 members
 ]
-weeks = 1
+weeks = 5
 n_groups = 6
+time_limit = 10 #timeout for the solver (in seconds)
+
+cost = -1
+solution = ""
+
+###################################INPUT PARAMETERS END###############################################################
+
+
 
 class Context:
     def id(self, x):
@@ -62,42 +76,40 @@ class Context:
          return [x, y]
 
 def on_model(m):
-    if str(m) == "":
-        print("INSTANCE OK, NO VIOLATION DETECTED")
-    else:
-        print("VIOLATION DETECTED:")
-        print(m)
+    global cost, solution #porcata indicibile, but works
+    cost = m.cost[0]
+    solution = str(m)
 
-
-def create_pair_list():
-    pair_list = [[] for _ in range(len(students))]
-    for group in groups:
-        for id in group:
-            break
             
 def create_input_file(filename="input.lp"):
     students_padded = pad_students(students,n_groups)
     past_groups_padded = pad_groups(past_groups,students,students_padded)
     students_per_group = len(students_padded)//n_groups
-    input =  "n_of_groups({}).\n".format(n_groups)
-    input += "n_of_students({}).\n".format(len(students_padded))
+    input =  "groups({}).\n".format(n_groups)
+    input += "students({}).\n".format(len(students_padded))
     input += "weeks({}).\n".format(weeks)
     input += "students_per_group({}).\n".format(students_per_group)
     input += facts_met_students(past_groups_padded,n_groups)
-    return input
+    with open(filename,'w') as f:
+        f.write(input)
+        f.close()
 
 ### if the number of students is not divisible by n_groups, add pad students 
 def pad_students(students,n_groups):
-    remainder = len(students)/n_groups
+    resdiv = len(students)//n_groups
+    remainder = len(students)%n_groups
+    print(resdiv-remainder)
     students_padded = students
-    for i in range(remainder):
-        students_padded.append(len(students)+i)
+    if remainder > 0:
+        for i in range(resdiv-remainder):
+            students_padded.append(len(students)+i)
+        return students_padded
 
 ### add a group of the padded students, such that it is penalized to put more than one pad per group 
 ### (to avoid unbalanced groups)
 def pad_groups(past_groups,students,students_padded):
     past_groups_padded = past_groups
-    padded = students_padded[len(students)]
+    padded = students_padded[len(students):]
     if len(padded)>0:
         past_groups_padded.append(padded)
     return past_groups_padded
@@ -106,58 +118,30 @@ def facts_met_students(past_groups_padded,n_groups):
     result = ""
     curr_group = []
     for week_id,group in enumerate(past_groups_padded):
-        curr_group = group.sort()
-        for i,student1 in enumerate(curr_group):
-            for j in range(i+1,len(curr_group)):
-                student2 = curr_group[j]
+        group.sort()
+        print(group)
+        for i,student1 in enumerate(group):
+            for j in range(i+1,len(group)):
+                student2 = group[j]
                 result += "meets({},{},{}).\n".format(student1,student2,week_id*-1)
     return result
-````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-def parsedSolution(file):
-    outString = ""
-    with open(joinp(file)) as f:
-        for i, l in enumerate(f.readlines()):
-            if i == 0:
-                continue
-            curr_line = l.strip("\n").replace(" ","")
-            row = curr_line.split(",")
-            op_id = f"op{row[1]}x{row[2]}x{row[3]}"
-            mach_id = f"mach{row[4]}x{row[5]}"
-            start = round(float(row[7])*60.0)
-            end = round(float(row[8])*60.0)
 
-            outString += f"start({op_id},{start}).\n"
-            outString += f"end({op_id},{end}).\n"
-            outString += f"onMachine({op_id},{mach_id}).\n"
-    return outString
 
-#DATA
-# instance = "SMALL"
-# solution = "instance.edb"
-# instance_folder = f"../data/instances/{instance}"
-# solution_file = f"../results/{solution}"
-# checker_folder = f"./sol_checker/toCheck/{instance}"
-
-# os.makedirs(checker_folder, exist_ok=True)
-# toCheckFile = joinp(checker_folder,solution)
 
 create_input_file(filename="input.lp")
 
-# with open(toCheckFile,"w") as f:
-#     f.write(parsedMachines(instance_folder))
-#     f.write("\n\n")
-#     f.write(parsedJobs(instance_folder))
-#     f.write("\n\n")
-#     f.write(parsedSolution(solution_file))
 
-# for i in range(1,11):
-#     instance_name = "instance{}.edb".format(i)
 
-#     toCheckFile = joinp(checker_folder, instance_name)
-#     print(toCheckFile)
-#     ctl = clingo.Control()
-#     ctl.load(toCheckFile)
-#     ctl.load('./sol_checker/checker.asp')
-#     ctl.ground([("base", [])], context=Context())
-#     ctl.solve(on_model=on_model)
 
+ctl = clingo.Control()
+ctl.load('./input.lp')
+ctl.load('./solver.lp')
+ctl.ground([("base", [])], context=Context())
+
+with ctl.solve(on_model=on_model, async_=True) as handle:
+    handle.wait(time_limit)
+    handle.cancel()
+    print("++++++++++++++++++TIMEOUT+++++++++++++++++++++++")
+    # print (handle.get())
+print("Cost of Final solution is ",cost)
+print(solution)
