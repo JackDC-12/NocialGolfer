@@ -1,6 +1,6 @@
 groups(6).
 students(42).
-lunches(1).
+lunches(2).
 students_per_group(7).
 meets(0,1,-1).
 meets(0,2,-1).

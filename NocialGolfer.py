@@ -61,13 +61,11 @@ past_groups = [
     [32, 33, 34, 35, 36, 37]  # Group 7: 6 members
 ]
 
-lunches = 1 #how many lunches to plan ahead
-n_groups = 6 #n of groups for the lunch
-time_limit = 10 #timeout for the solver (in seconds)
+
 
 ###################################INPUT PARAMETERS END###############################################################
 
-cost = -1
+cost = None
 solution = ""
 
 
@@ -79,11 +77,12 @@ class Context:
 
 def on_model(m):
     global cost, solution #porcata indicibile, but works
-    cost = m.cost[0]
+    cost = m.cost
     solution = str(m)
+    print("NEW SOLUTION FOUND! cost = ",cost)
 
             
-def create_input_file(filename="input.lp"):
+def create_input_file(lunches,n_groups,filename="input.lp"):
     students_padded = pad_students(students,n_groups)
     past_groups_padded = pad_groups(past_groups,students,students_padded)
     students_per_group = len(students_padded)//n_groups
@@ -146,17 +145,28 @@ def parse_solution(solution, print_names=False, include_padding=False):
 
 
 
-create_input_file(filename="input.lp")
-ctl = clingo.Control()
-ctl.load('./input.lp')
-ctl.load('./solver.lp')
-ctl.ground([("base", [])], context=Context())
 
-with ctl.solve(on_model=on_model, async_=True) as handle:
-    handle.wait(time_limit)
-    handle.cancel()
-    print("++++++++++++++++++TIMEOUT+++++++++++++++++++++++")
-    # print (handle.get())
-print("Cost of Final solution is ",cost)
+def solve(input,solver,time_limit=10):
+    ctl = clingo.Control()
+    ctl.load(input)
+    ctl.load(solver)
+    ctl.ground([("base", [])], context=Context())
 
-parse_solution(solution, print_names=True, include_padding=False)
+    with ctl.solve(on_model=on_model, async_=True) as handle:
+        handle.wait(time_limit)
+        handle.cancel()
+        print("++++++++++++++++++TIMEOUT+++++++++++++++++++++++")
+        # print (handle.get())
+    print("Cost of Final solution is ",cost)
+
+    parse_solution(solution, print_names=True, include_padding=True)
+
+
+lunches = 2 #how many lunches to plan ahead
+n_groups = 6 #n of groups for the lunch
+time_limit = 20 #timeout for the solver (in seconds)
+input='./input.lp'
+solver = './solver2.lp'
+create_input_file(lunches,n_groups,filename="input.lp")
+solve(input,solver,time_limit)
+

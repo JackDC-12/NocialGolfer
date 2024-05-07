@@ -18,5 +18,6 @@ lunch(W-1) :- lunch(W), W > 0.
 
 % P1 and P2 meet during lunch W
 meets(P1,P2,W) :- student_lunch_group(P1,W,G), student_lunch_group(P2,W,G), P1 < P2.
-:~ #count { W : meets(P1,P2,W) }>1, student(P1), student(P2), P1 < P2. [1,P1,P2]
+%:~ C=#count { W : meets(P1,P2,W) } > 1, student(P1), student(P2), P1 < P2. [C*C,P1,P2]
+:~ C=#count { W : meets(P1,P2,W) }>1, student(P1), student(P2), P1 < P2. [1@C,P1,P2]
 #show student_lunch_group/3.
