@@ -83,6 +83,9 @@ def on_model(m):
 
             
 def create_input_file(lunches,n_groups,filename="input.lp"):
+    if lunches==0 or n_groups ==0: 
+        print("lunches and n_groups cannot be 0")
+        sys.exit(-1)
     students_padded = pad_students(students,n_groups)
     past_groups_padded = pad_groups(past_groups,students,students_padded)
     students_per_group = len(students_padded)//n_groups
@@ -99,12 +102,12 @@ def create_input_file(lunches,n_groups,filename="input.lp"):
 def pad_students(students,n_groups):
     resdiv = len(students)//n_groups
     remainder = len(students)%n_groups
-    print(resdiv-remainder)
     students_padded = copy(students)
     if remainder > 0:
-        for i in range(resdiv-remainder):
+        print(n_groups-remainder)
+        for i in range(n_groups-remainder):
             students_padded.append(len(students)+i)
-        return students_padded
+    return students_padded
 
 ### add a group of the padded students, such that it is penalized to put more than one pad per group 
 ### (to avoid unbalanced groups)
@@ -162,9 +165,9 @@ def solve(input,solver,time_limit=10):
     parse_solution(solution, print_names=True, include_padding=True)
 
 
-lunches = 2 #how many lunches to plan ahead
-n_groups = 6 #n of groups for the lunch
-time_limit = 20 #timeout for the solver (in seconds)
+lunches = 5 #how many lunches to plan ahead
+n_groups =0 #n of groups for the lunch
+time_limit = 1 #timeout for the solver (in seconds)
 input='./input.lp'
 solver = './solver2.lp'
 create_input_file(lunches,n_groups,filename="input.lp")

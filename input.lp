@@ -1,7 +1,7 @@
-groups(6).
-students(42).
-lunches(2).
-students_per_group(7).
+groups(1).
+students(38).
+lunches(5).
+students_per_group(38).
 meets(0,1,-1).
 meets(0,2,-1).
 meets(0,3,-1).
@@ -87,9 +87,3 @@ meets(34,37,-7).
 meets(35,36,-7).
 meets(35,37,-7).
 meets(36,37,-7).
-meets(38,39,-8).
-meets(38,40,-8).
-meets(38,41,-8).
-meets(39,40,-8).
-meets(39,41,-8).
-meets(40,41,-8).
