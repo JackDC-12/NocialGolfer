@@ -165,10 +165,12 @@ def solve(input,solver,time_limit=10):
     parse_solution(solution, print_names=True, include_padding=True)
 
 
-lunches = 5 #how many lunches to plan ahead
-n_groups =0 #n of groups for the lunch
-time_limit = 1 #timeout for the solver (in seconds)
-input='./input.lp'
+
+lunches = 2 #how many lunches to plan ahead
+n_groups = 5 #n of groups for the lunch
+time_limit = 60 #timeout for the solver (in seconds)
+input = './input.lp'
+
 solver = './solver2.lp'
 create_input_file(lunches,n_groups,filename="input.lp")
 solve(input,solver,time_limit)
