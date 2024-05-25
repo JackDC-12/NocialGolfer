@@ -163,9 +163,9 @@ def solve(input,solver,time_limit=10):
 
 
 lunches = 2 #how many lunches to plan ahead
-n_groups = 6 #n of groups for the lunch
-time_limit = 20 #timeout for the solver (in seconds)
-input='./input.lp'
+n_groups = 5 #n of groups for the lunch
+time_limit = 60 #timeout for the solver (in seconds)
+input = './input.lp'
 solver = './solver2.lp'
 create_input_file(lunches,n_groups,filename="input.lp")
 solve(input,solver,time_limit)
